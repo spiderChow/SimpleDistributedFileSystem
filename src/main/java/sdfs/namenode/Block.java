@@ -74,6 +74,7 @@ public class Block {
             ret++;
             data[position] = src.get();
             position++;
+            setDirty(true);
         }
         return ret;
     }

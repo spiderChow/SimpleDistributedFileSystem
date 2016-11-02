@@ -28,7 +28,6 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
             Block block = (Block) eldest.getValue();
             if (block.isDirty()) {
                 //write back
-
                 block.writeBack(fileuuid);
             }
             return true;
