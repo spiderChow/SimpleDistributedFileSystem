@@ -13,21 +13,28 @@ import sdfs.protocol.IDataNodeProtocol;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.UUID;
 
 public class DataNodeStub implements IDataNodeProtocol {
-
+    String host = "127.0.0.1";  //要连接的服务端IP地址
+    int port = DataNode.DATA_NODE_PORT;   //要连接的服务端对应的监听端口
 
 
     //ip地址和port都已经写死了
+
+    public DataNodeStub(InetAddress inetAddress) {
+        this.host = inetAddress.getHostName();
+        //this.port = inetAddress.getPort();
+    }
 
     @Override
     public byte[] read(UUID fileUuid, int blockNumber, int offset, int size) throws IndexOutOfBoundsException, IOException {
         //read data from ip: LocatedBlock.inetAddress ;blockNum: LocatedBlcok.blockNumber
         byte[] ret = new byte[0];
-        String host = "127.0.0.1";  //要连接的服务端IP地址
-        int port = DataNode.DATA_NODE_PORT;   //要连接的服务端对应的监听端口
+
         //与服务端建立连接
         Socket client = null;
         try {
@@ -85,7 +92,8 @@ public class DataNodeStub implements IDataNodeProtocol {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(client.getOutputStream());
             objectOutputStream.writeObject(message);
             objectOutputStream.flush();
-            objectOutputStream.close();
+            // objectOutputStream.close();
+            client.shutdownOutput();
 
             //从服务器读取响应
             ObjectInputStream objectInputStream = new ObjectInputStream(client.getInputStream());

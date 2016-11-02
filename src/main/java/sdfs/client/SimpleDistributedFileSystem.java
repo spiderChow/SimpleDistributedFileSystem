@@ -10,6 +10,7 @@ import sdfs.namenode.SDFSFileChannel;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class SimpleDistributedFileSystem implements ISimpleDistributedFileSystem {
 
@@ -25,9 +26,11 @@ public class SimpleDistributedFileSystem implements ISimpleDistributedFileSystem
         SimpleDistributedFileSystem simpleDistributedFileSystem = new SimpleDistributedFileSystem(inetSocketAddress, 1);
         //mkdir
         simpleDistributedFileSystem.mkdir("Dir");
+        System.out.println("mkdir 完成");
         //create
         SDFSFileChannel sdfsFileChannel = simpleDistributedFileSystem.create("b.txt");
         sdfsFileChannel.close();
+        System.out.println("create 完成");
 
         //write
         sdfsFileChannel = simpleDistributedFileSystem.openReadWrite("b.txt");
@@ -35,14 +38,19 @@ public class SimpleDistributedFileSystem implements ISimpleDistributedFileSystem
         ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
         sdfsFileChannel.write(byteBuffer);
         sdfsFileChannel.close();
+        System.out.println("write 完成");
         //read
         sdfsFileChannel = simpleDistributedFileSystem.openReadWrite("b.txt");
         byteBuffer =ByteBuffer.allocate(3);
         sdfsFileChannel.read(byteBuffer);
+        System.out.println("read 完成");
         //打印buffer
         System.out.println(byteBuffer.toString());
+        byte[] content=byteBuffer.array();
+        System.out.println(Arrays.toString(content));
         sdfsFileChannel.close();
 
+        /*
         //write 2 block
         sdfsFileChannel = simpleDistributedFileSystem.openReadWrite("b.txt");
         ByteBuffer byteBuffer2 =ByteBuffer.allocate(1024*64+1);
@@ -60,6 +68,7 @@ public class SimpleDistributedFileSystem implements ISimpleDistributedFileSystem
         //打印buffer
         System.out.println(byteBuffer2.toString());
         sdfsFileChannel.close();
+        */
 
 
     }
@@ -82,18 +91,21 @@ public class SimpleDistributedFileSystem implements ISimpleDistributedFileSystem
     @Override
     public SDFSFileChannel openReadonly(String fileUri) throws IOException {
         SDFSFileChannel sdfsFileChannel = nameNodeStub.openReadonly(fileUri);
+        sdfsFileChannel.setFileDataBlockCacheSize(fileDataBlockCacheSize);
         return sdfsFileChannel;
     }
 
     @Override
     public SDFSFileChannel create(String fileUri) throws IOException {
         SDFSFileChannel sdfsFileChannel = nameNodeStub.create(fileUri);
+        sdfsFileChannel.setFileDataBlockCacheSize(fileDataBlockCacheSize);
         return sdfsFileChannel;
     }
 
     @Override
     public SDFSFileChannel openReadWrite(String fileUri) throws IOException {
         SDFSFileChannel sdfsFileChannel = nameNodeStub.openReadwrite(fileUri);
+        sdfsFileChannel.setFileDataBlockCacheSize(fileDataBlockCacheSize);
         return sdfsFileChannel;
     }
 

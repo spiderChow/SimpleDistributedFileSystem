@@ -55,6 +55,7 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
             Method method = this.getClass().getMethod(message.getMethodName(), message.getParameterTypes());
             Object result = method.invoke(this, message.getParams());
             message.setResult(result);
+            printtree();
         } catch (NoSuchMethodException | SecurityException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -73,9 +74,11 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
     private final Map<UUID, FileNode> readwritePFile = new HashMap<>();
     private int[] blockNums = new int[10000];
     private int[] nodeNums = new int[10000];
+    // private int fileDataBlockCacheSize;
 
 
     public NameNode(int nameNodePort) {
+        // this.fileDataBlockCacheSize = fileDataBlockCacheSize;
         //存储文件在Nodes文件夹中
         //检查是否创建好文件夹和root,否则则进行初始化
         File file = new File("Nodes");
@@ -318,7 +321,7 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
         blockNums[blockNum] = 1;
         InetAddress inetAddress = null;
         try {
-            inetAddress = InetAddress.getLocalHost();
+            inetAddress = InetAddress.getLocalHost();//生成的都是本地的localhost
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
@@ -358,7 +361,7 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
     /*
     *  将Diruri变为DirNode
     *  需要DirUri必须存在
-    *  用于create和makedir函数,去其path的前一部分
+    *  用于create和makedir函数,取其path的前一部分
     * */
     private DirNode pathToDirNode(String DirUri) {
         System.out.println(DirUri);
@@ -415,5 +418,29 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
             return fileNode;
         }
         return null;
+    }
+
+    private void printtree() {
+        System.out.println("TREE;");
+        DirNode dirNode = new DirNode();
+        dirNode.setNodeNum(0);
+        dirNode = (DirNode) dirNode.load();
+
+        printSubTree(dirNode);
+
+    }
+
+    private void printSubTree(Node node){
+        if(!node.isfile()){
+            System.out.println(node.getName());
+            Iterator<Entry> iterator =((DirNode) node).iterator();
+            while (iterator.hasNext()) {
+                Entry entry = iterator.next();
+                Node node2 = entry.getNode();
+                printSubTree(node2);
+            }
+        }else{
+            System.out.println(node.getName());
+        }
     }
 }

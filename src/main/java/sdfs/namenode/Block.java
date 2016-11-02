@@ -40,7 +40,7 @@ public class Block {
     }
 
     public void writeBack(UUID fileuuid) {
-        DataNodeStub dataNodeStub=new DataNodeStub();
+        DataNodeStub dataNodeStub=new DataNodeStub(inetAddress);
         try {
             dataNodeStub.write(fileuuid,blockNumber,0,data);
         } catch (IOException e) {
