@@ -1,11 +1,13 @@
 package sdfs.namenode;
 
+import sdfs.client.DataNodeStub;
 import sdfs.datanode.DataNode;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * Created by shiyuhong on 16/10/25.
@@ -16,9 +18,9 @@ public class Block {
     private boolean isDirty = false;
     private int limit = data.length;
     private int position = 0;
+    //每次写回都只写回一个locatedBlock，所以只存一个位置的副本就好了
     private final InetAddress inetAddress;
     private final int blockNumber;
-
 
 
     public Block(byte[] data, InetAddress inetAddress, int blockNumber) {
@@ -29,6 +31,20 @@ public class Block {
             limit = data.length;
         } else {
             System.out.println("放入data的长度大于一个块的长度");
+        }
+    }
+    public Block(InetAddress inetAddress, int blockNumber) {
+        this.inetAddress = inetAddress;
+        this.blockNumber = blockNumber;
+        //空的data，大小为DataNode.BLOCK_SIZE
+    }
+
+    public void writeBack(UUID fileuuid) {
+        DataNodeStub dataNodeStub=new DataNodeStub();
+        try {
+            dataNodeStub.write(fileuuid,blockNumber,0,data);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

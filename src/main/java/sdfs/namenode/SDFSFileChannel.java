@@ -34,7 +34,7 @@ public class SDFSFileChannel implements SeekableByteChannel, Flushable, Serializ
         this.blockAmount = blockAmount;
         this.fileNode = fileNode;
         this.isReadOnly = isReadOnly;
-        cache = new LRUCache<>(fileDataBlockCacheSize);//(the hashcode of locatedblock, block)
+        cache = new LRUCache<>(fileDataBlockCacheSize,uuid);//(the hashcode of locatedblock, block)
     }
 
     @Override
@@ -144,7 +144,7 @@ public class SDFSFileChannel implements SeekableByteChannel, Flushable, Serializ
                 LocatedBlock locatedBlock = chooseOneInBlockInfo(blockInfo);
                 try {
                     byte[] data = dataNodeStub.read(uuid, locatedBlock.getBlockNumber(), 0, DataNode.BLOCK_SIZE);
-                    block = new Block(data, ,blockNumber);
+                    block = new Block(data,locatedBlock.getInetAddress() ,locatedBlock.getBlockNumber());
                     cache.put(locatedBlock.hashCode(), block);
                     return block;
                 } catch (IOException e) {
@@ -156,7 +156,7 @@ public class SDFSFileChannel implements SeekableByteChannel, Flushable, Serializ
             NameNode nameNode = new NameNode(NameNode.NAME_NODE_PORT);
             LocatedBlock locatedBlock = nameNode.addBlock(uuid);
             //放进cache
-            Block block = new Block(inetAddress);
+            Block block = new Block(locatedBlock.getInetAddress() ,locatedBlock.getBlockNumber());
             cache.put(locatedBlock.hashCode(), block);
             return block;
         }

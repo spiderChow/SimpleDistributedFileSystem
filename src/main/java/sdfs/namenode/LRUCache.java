@@ -5,17 +5,20 @@ import sdfs.client.DataNodeStub;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by shiyuhong on 16/10/25.
  */
 public class LRUCache<K, V> extends LinkedHashMap<K, V> {
     private final int fileDataBlockCacheSize;
+    private UUID fileuuid;
     //each block will be 64k
 
-    public LRUCache(int cacheSize) {
+    public LRUCache(int cacheSize,UUID fileuuid) {
         super((int) Math.ceil(cacheSize / 0.75) + 1, 0.75f, true);
         fileDataBlockCacheSize = cacheSize;
+        this.fileuuid=fileuuid;
     }
 
     @Override
@@ -25,9 +28,8 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
             Block block = (Block) eldest.getValue();
             if (block.isDirty()) {
                 //write back
-                DataNodeStub dataNodeStub=new DataNodeStub();
-                dataNodeStub.
-                block.write();
+
+                block.writeBack(fileuuid);
             }
             return true;
         } else {
