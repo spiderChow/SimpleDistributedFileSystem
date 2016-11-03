@@ -35,16 +35,12 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
                 objectOutputStream.writeObject(message);
                 objectOutputStream.flush();
                 // objectOutputStream.close();
-
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
-
             objectInputStream.close();
             socket.close();
         }
-
-
     }
 
     public void call(Message message) {
@@ -65,9 +61,7 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
-
     }
-
 
     public static final int NAME_NODE_PORT = 4341;
     private final Map<UUID, FileNode> readonlyFile = new HashMap<>();
@@ -75,7 +69,6 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
     private int[] blockNums = new int[10000];
     private int[] nodeNums = new int[10000];
     // private int fileDataBlockCacheSize;
-
 
     public NameNode(int nameNodePort) {
         // this.fileDataBlockCacheSize = fileDataBlockCacheSize;
@@ -98,15 +91,10 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
                 e.printStackTrace();
             }
             writeBlockNums();
-
-
         }
-
-
         File[] arr = file.listFiles();// 先列出当前文件夹下的文件及目录
         for (File ff : arr) {
             String num = ff.getName().substring(0, ff.getName().indexOf("."));
-
             if (!num.equals("cgf")) {
                 int numm = Integer.parseInt(num);
                 nodeNums[numm] = 1;
@@ -125,15 +113,9 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
                     e.printStackTrace();
                 }
             }
-
-
         }
-
-
         System.out.println(Arrays.toString(nodeNums));
         System.out.println(Arrays.toString(blockNums));
-
-
     }
 
     private void writeBlockNums() {
@@ -189,8 +171,6 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
     @Override
     public SDFSFileChannel create(String fileUri) throws IOException {
         System.out.println("NameNode enter create");
-
-
         int a = fileUri.lastIndexOf("/");
         DirNode fatherDirNode = null;
         if (a < 0) {
@@ -200,7 +180,6 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
         }
         if (fatherDirNode != null) {
             System.out.println("存在路径,即将创建文件");
-
             //存在路径,创建文件
             String name = fileUri.substring(a + 1);
             FileNode fileNode = new FileNode();
@@ -225,8 +204,6 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
             //error:父路径不存在
             System.out.println(fileUri + "!路径不存在!");
         }
-
-
         return null;
     }
 
@@ -234,10 +211,7 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
     public void closeReadonlyFile(UUID fileUuid) throws IllegalStateException, IOException {
         //file size should be checked when closing the file.
         //FileNode fileNode=readonlyFile.get(fileUuid);
-
         readonlyFile.remove(fileUuid);
-
-
     }
 
     @Override
@@ -250,7 +224,6 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
 
     @Override
     public void mkdir(String fileUri) throws IOException {
-
         int a = fileUri.lastIndexOf("/");
         DirNode fatherDirNode = null;
         if (a < 0) {
@@ -258,7 +231,6 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
         } else {
             fatherDirNode = pathToDirNode(fileUri.substring(0, a));
         }
-
         if (fatherDirNode != null) {
             //存在路径,创建子路径
             String name = fileUri.substring(a + 1);
@@ -280,7 +252,6 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
     @Override
     public LocatedBlock addBlock(UUID fileUuid) {
         System.out.println("NameNode addblock uuid" + fileUuid.toString());
-
         //遍历所有的LocatedBlock,取得一个可分配的LocatedBlock,
         //uuid是检查权限的!
         LocatedBlock locatedBlock = allocNewBlock();
@@ -361,10 +332,7 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
             }
         }
         return -1;
-
     }
-
-
     /*
     *  将Diruri变为DirNode
     *  需要DirUri必须存在

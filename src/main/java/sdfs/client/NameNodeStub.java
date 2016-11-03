@@ -167,9 +167,7 @@ public class NameNodeStub implements INameNodeProtocol {
         Object[] Parametes = new Object[]{fileUuid, blockAmount};
         message.setParams(Parametes);
         message = communicate(message);
-
         return (List<LocatedBlock>) message.getResult();
-
     }
 
     @Override
@@ -182,7 +180,6 @@ public class NameNodeStub implements INameNodeProtocol {
         Object[] Parametes = new Object[]{fileUuid};
         message.setParams(Parametes);
         message = communicate(message);
-
     }
 
     @Override
@@ -195,6 +192,5 @@ public class NameNodeStub implements INameNodeProtocol {
         Object[] Parametes = new Object[]{fileUuid, blockAmount};
         message.setParams(Parametes);
         message = communicate(message);
-
     }
 }

@@ -30,11 +30,12 @@ public class SimpleDistributedFileSystem implements ISimpleDistributedFileSystem
         System.out.println("mkdir 完成");
         */
         //create
-        SDFSFileChannel sdfsFileChannel = simpleDistributedFileSystem.create("Dir/a.txt");
-        byte[] bytes = {'a','c','e','q','3'};
+        SDFSFileChannel sdfsFileChannel = simpleDistributedFileSystem.openReadWrite("Dir/a.txt");
+        byte[] bytes = {'z','x','y','q','a'};
         ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        sdfsFileChannel.position(7);
         sdfsFileChannel.write(byteBuffer);
-        byteBuffer =ByteBuffer.allocate(3);
+        byteBuffer =ByteBuffer.allocate(7);
         sdfsFileChannel.position(0);
         sdfsFileChannel.read(byteBuffer);
         //打印buffer

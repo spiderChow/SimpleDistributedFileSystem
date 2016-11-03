@@ -34,7 +34,6 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
         } else {
             return false;
         }
-
     }
 
     @Override
@@ -52,6 +51,5 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
             System.out.println(this.get(iterator.next()));
         }
         System.out.println();
-
     }
 }
