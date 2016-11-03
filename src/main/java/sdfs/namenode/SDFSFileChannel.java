@@ -61,16 +61,20 @@ public class SDFSFileChannel implements SeekableByteChannel, Flushable, Serializ
 
     @Override
     public int write(ByteBuffer src) throws IOException {
-        int ret = 0;
-        fileSize = src.remaining();
-        while (src.hasRemaining()) {
-            Block block = blockAtPosition((int) position);
-            int byteNum = block.write(src);
-            ret += byteNum;
-            position += byteNum;
+        if (!isReadOnly) {
+            int ret = 0;
+            fileSize = src.remaining();
+            truncate(fileSize);
+            while (src.hasRemaining()) {
+                Block block = blockAtPosition((int) position);
+                int byteNum = block.write(src);
+                ret += byteNum;
+                position += byteNum;
+            }
+            printCache();
+            return ret;
         }
-        printCache();
-        return ret;
+        return -1;
     }
 
     @Override
@@ -96,27 +100,52 @@ public class SDFSFileChannel implements SeekableByteChannel, Flushable, Serializ
     * In either case, if the current position is greater than the given size then it is set to that size
     * */
     public SeekableByteChannel truncate(long size) throws IOException {
+        //计算是否要移除最后的LocatedBlock
         if (size < fileSize) {
             fileSize = (int) size;
-            //discard
-            //????
+            int newBlockNum = fileSize / DataNode.BLOCK_SIZE;
+            if (fileSize > newBlockNum * DataNode.BLOCK_SIZE) {
+                newBlockNum++;
+            }
+            //所有block内容全部清为0
+
+            //dataNode删掉block内容
+            InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", NameNode.NAME_NODE_PORT);
+            NameNodeStub nameNodeStub = new NameNodeStub(inetSocketAddress);
+            nameNodeStub.removeLastBlocks(uuid, blockAmount - newBlockNum);
+            for (int i = 0; i < blockAmount - newBlockNum; i++) {
+                fileNode.removeLastBlockInfo();
+            }
+            return this;
         }
         return null;
     }
 
     @Override
     public boolean isOpen() {
-        //todo your code here
+        if (cache != null) {
+            return true;
+        }
         return false;
     }
 
     @Override
     public void close() throws IOException {
-         //由于是为每一次请求保留cache，所以close时候要将所有的cahce写回
-        Iterator<Map.Entry<Integer,Block>> iterator=cache.entrySet().iterator();
-        if(iterator.hasNext()){
-            Block block=iterator.next().getValue();
-           block.writeBack(uuid);
+        //由于是为每一次请求保留cache，所以close时候要将所有的cahce写回
+        Iterator<Map.Entry<Integer, Block>> iterator = cache.entrySet().iterator();
+        if (iterator.hasNext()) {
+            Block block = iterator.next().getValue();
+            block.writeBack(uuid);
+        }
+        cache.clear();
+        cache = null;
+        //改变fileNode内容并保存（只需要将fileSize保存下来就可以了）
+        InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", NameNode.NAME_NODE_PORT);
+        NameNodeStub nameNodeStub = new NameNodeStub(inetSocketAddress);
+        if (isReadOnly) {
+            nameNodeStub.closeReadonlyFile(uuid);
+        } else {
+            nameNodeStub.closeReadwriteFile(uuid, fileSize);
         }
     }
 
@@ -160,7 +189,7 @@ public class SDFSFileChannel implements SeekableByteChannel, Flushable, Serializ
                 DataNodeStub dataNodeStub = new DataNodeStub(locatedBlock.getInetAddress());//??连接
                 try {
                     byte[] data = dataNodeStub.read(uuid, locatedBlock.getBlockNumber(), 0, DataNode.BLOCK_SIZE);
-                    System.out.println("channel getCacheBlockOfBlockInfo:"+Arrays.toString(data));
+                    System.out.println("channel getCacheBlockOfBlockInfo:" + Arrays.toString(data));
                     block = new Block(data, locatedBlock.getInetAddress(), locatedBlock.getBlockNumber());
                     cache.put(locatedBlock.hashCode(), block);
                     return block;
@@ -169,10 +198,17 @@ public class SDFSFileChannel implements SeekableByteChannel, Flushable, Serializ
                 }
             }
         } else {
-            //需要新添加blockInfo
+            //需要新添加blockInfo，添加一次，NameNode就将fileNode里面的BlockInfo保存在disk上了
             InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", NameNode.NAME_NODE_PORT);
             NameNodeStub nameNodeStub = new NameNodeStub(inetSocketAddress);
             LocatedBlock locatedBlock = nameNodeStub.addBlock(uuid);
+            BlockInfo blockInfo = new BlockInfo();
+            blockInfo.addLocatedBlock(locatedBlock);
+            fileNode.addBlockInfo(blockInfo);
+
+            blockAmount++;
+
+
             //放进cache
             Block block = new Block(locatedBlock.getInetAddress(), locatedBlock.getBlockNumber());
             cache.put(locatedBlock.hashCode(), block);
@@ -204,12 +240,12 @@ public class SDFSFileChannel implements SeekableByteChannel, Flushable, Serializ
     }
 
     public void printCache() {
-        System.out.println("打印cache状态："+cache.size());
-       // System.out.println();
-        Iterator<Map.Entry<Integer,Block>> iterator=cache.entrySet().iterator();
-        if(iterator.hasNext()){
-            Block block=iterator.next().getValue();
-            byte[ ] data=block.getData();
+        System.out.println("打印cache状态：" + cache.size());
+        // System.out.println();
+        Iterator<Map.Entry<Integer, Block>> iterator = cache.entrySet().iterator();
+        if (iterator.hasNext()) {
+            Block block = iterator.next().getValue();
+            byte[] data = block.getData();
             System.out.println(Arrays.toString(data));
         }
     }

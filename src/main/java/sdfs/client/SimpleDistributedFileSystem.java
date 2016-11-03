@@ -24,21 +24,43 @@ public class SimpleDistributedFileSystem implements ISimpleDistributedFileSystem
         //  nameNodeStub.mkdir("dir");
         InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", NameNode.NAME_NODE_PORT);
         SimpleDistributedFileSystem simpleDistributedFileSystem = new SimpleDistributedFileSystem(inetSocketAddress, 1);
+/*
         //mkdir
         simpleDistributedFileSystem.mkdir("Dir");
         System.out.println("mkdir 完成");
+        */
         //create
-        SDFSFileChannel sdfsFileChannel = simpleDistributedFileSystem.create("b.txt");
-        sdfsFileChannel.close();
-        System.out.println("create 完成");
-
-        //write
-        sdfsFileChannel = simpleDistributedFileSystem.openReadWrite("b.txt");
-        byte[] bytes = {'a','b','e'};
+        SDFSFileChannel sdfsFileChannel = simpleDistributedFileSystem.create("Dir/a.txt");
+        byte[] bytes = {'a','c','e','q','3'};
         ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
         sdfsFileChannel.write(byteBuffer);
+        byteBuffer =ByteBuffer.allocate(3);
+        sdfsFileChannel.position(0);
+        sdfsFileChannel.read(byteBuffer);
+        //打印buffer
+        System.out.println(byteBuffer.toString());
+        byte[] content=byteBuffer.array();
+        System.out.println(Arrays.toString(content));
+
         sdfsFileChannel.close();
-        System.out.println("write 完成");
+        System.out.println("create 完成");
+        /*
+        //write
+        SDFSFileChannel sdfsFileChannel = simpleDistributedFileSystem.openReadWrite("b.txt");
+        byte[] bytes = {'a','c','e','q','3'};
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        sdfsFileChannel.write(byteBuffer);
+
+        byteBuffer =ByteBuffer.allocate(3);
+        sdfsFileChannel.position(0);
+        sdfsFileChannel.read(byteBuffer);
+        //打印buffer
+        System.out.println(byteBuffer.toString());
+        byte[] content=byteBuffer.array();
+        System.out.println(Arrays.toString(content));
+        sdfsFileChannel.close();
+        //System.out.println("write 完成");
+        /*
         //read
         sdfsFileChannel = simpleDistributedFileSystem.openReadWrite("b.txt");
         byteBuffer =ByteBuffer.allocate(3);
@@ -50,26 +72,32 @@ public class SimpleDistributedFileSystem implements ISimpleDistributedFileSystem
         System.out.println(Arrays.toString(content));
         sdfsFileChannel.close();
 
-        /*
+
         //write 2 block
         sdfsFileChannel = simpleDistributedFileSystem.openReadWrite("b.txt");
-        ByteBuffer byteBuffer2 =ByteBuffer.allocate(1024*64+1);
+        byte[] content2=new byte[1024*64+1];
         int i=0;
-        while(byteBuffer2.hasRemaining()){
-            byteBuffer.putInt(i);
+        while(i<1024*64+1){
+            content2[i]= 'a';
             i++;
         }
-        sdfsFileChannel.write(byteBuffer);
+        ByteBuffer byteBuffer2 =ByteBuffer.wrap(content2);
+        sdfsFileChannel.write(byteBuffer2);
         sdfsFileChannel.close();
+        System.out.println("write2 完成");
         //read
         sdfsFileChannel = simpleDistributedFileSystem.openReadWrite("b.txt");
         byteBuffer2 =ByteBuffer.allocate(1024*64+1);
         sdfsFileChannel.read(byteBuffer2);
         //打印buffer
         System.out.println(byteBuffer2.toString());
-        sdfsFileChannel.close();
-        */
 
+        byte[] content3=byteBuffer2.array();
+        System.out.println(Arrays.toString(content3));
+        sdfsFileChannel.close();
+        System.out.println("read2 完成");
+
+*/
 
     }
 

@@ -175,6 +175,7 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
             UUID uuid = UUID.randomUUID();
             readwritePFile.put(uuid, fileNode);
             //UUID uuid, int fileSize, int blockAmount, FileNode fileNode, boolean isReadOnly
+            System.out.println("uuid readwrite :"+uuid);
             SDFSFileChannel sdfsFileChannel = new SDFSFileChannel(uuid, fileNode.getFileSize(), fileNode.getBlockAmount(), fileNode, false);
             return sdfsFileChannel;
 
@@ -236,13 +237,15 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
 
         readonlyFile.remove(fileUuid);
 
+
     }
 
     @Override
     public void closeReadwriteFile(UUID fileUuid, int newFileSize) throws IllegalStateException, IllegalArgumentException, IOException {
-        FileNode fileNode = readonlyFile.get(fileUuid);
+        FileNode fileNode = readwritePFile.get(fileUuid);
         fileNode.setFileSize(newFileSize);
         readwritePFile.remove(fileUuid);
+        fileNode.dump(fileNode);
     }
 
     @Override
@@ -303,12 +306,16 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
 
     @Override
     public void removeLastBlock(UUID fileUuid) throws IllegalStateException {
-
+        FileNode fileNode = readwritePFile.get(fileUuid);
+        fileNode.removeLastBlockInfo();
+        fileNode.dump(fileNode);
     }
 
     @Override
     public void removeLastBlocks(UUID fileUuid, int blockAmount) throws IllegalStateException {
-
+        for (int i = 0; i < blockAmount; i++) {
+            removeLastBlock(fileUuid);
+        }
     }
 
     /*
@@ -430,16 +437,16 @@ public class NameNode implements INameNodeProtocol, INameNodeDataNodeProtocol {
 
     }
 
-    private void printSubTree(Node node){
-        if(!node.isfile()){
+    private void printSubTree(Node node) {
+        if (!node.isfile()) {
             System.out.println(node.getName());
-            Iterator<Entry> iterator =((DirNode) node).iterator();
+            Iterator<Entry> iterator = ((DirNode) node).iterator();
             while (iterator.hasNext()) {
                 Entry entry = iterator.next();
                 Node node2 = entry.getNode();
                 printSubTree(node2);
             }
-        }else{
+        } else {
             System.out.println(node.getName());
         }
     }

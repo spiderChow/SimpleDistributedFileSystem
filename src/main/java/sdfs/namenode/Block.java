@@ -33,6 +33,7 @@ public class Block {
             System.out.println("放入data的长度大于一个块的长度");
         }
     }
+
     public Block(InetAddress inetAddress, int blockNumber) {
         this.inetAddress = inetAddress;
         this.blockNumber = blockNumber;
@@ -40,9 +41,9 @@ public class Block {
     }
 
     public void writeBack(UUID fileuuid) {
-        DataNodeStub dataNodeStub=new DataNodeStub(inetAddress);
+        DataNodeStub dataNodeStub = new DataNodeStub(inetAddress);
         try {
-            dataNodeStub.write(fileuuid,blockNumber,0,data);
+            dataNodeStub.write(fileuuid, blockNumber, 0, data);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -62,8 +63,8 @@ public class Block {
         int ret = 0;
         while (dst.hasRemaining() && position < limit) {
             ret++;
-            position++;
             dst.put(data[position]);
+            position++;
         }
         return ret;
     }
@@ -75,6 +76,11 @@ public class Block {
             data[position] = src.get();
             position++;
             setDirty(true);
+        }
+        if (position < data.length) {
+            for (int i = position; i < data.length; i++) {
+                data[i] = 0;
+            }
         }
         return ret;
     }

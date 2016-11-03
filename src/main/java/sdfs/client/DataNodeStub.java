@@ -51,7 +51,7 @@ public class DataNodeStub implements IDataNodeProtocol {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(client.getOutputStream());
             objectOutputStream.writeObject(message);
             objectOutputStream.flush();
-            objectOutputStream.close();
+            client.shutdownOutput();
 
             //从服务器读取响应
             ObjectInputStream objectInputStream = new ObjectInputStream(client.getInputStream());

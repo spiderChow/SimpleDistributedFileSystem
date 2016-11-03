@@ -20,10 +20,12 @@ public class FileNode extends Node implements Serializable, Iterable<BlockInfo> 
 
     public void addBlockInfo(BlockInfo blockInfo) {
         blockInfos.add(blockInfo);
+
     }
 
     public void removeLastBlockInfo() {
         blockInfos.remove(blockInfos.size() - 1);
+
     }
 
     public int getFileSize() {
@@ -32,6 +34,7 @@ public class FileNode extends Node implements Serializable, Iterable<BlockInfo> 
 
     public void setFileSize(int fileSize) {
         this.fileSize = fileSize;
+
     }
 
     @Override
@@ -92,7 +95,6 @@ public class FileNode extends Node implements Serializable, Iterable<BlockInfo> 
     public BlockInfo getBlockInfoAt(int a) {
         return blockInfos.get(a);
     }
-
 
 
 }
